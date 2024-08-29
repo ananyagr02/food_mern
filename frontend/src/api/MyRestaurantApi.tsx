@@ -1,7 +1,7 @@
 import { Restaurant } from "@/types";
 // import React, { useEffect, useState } from 'react'
 // import { useNavigate } from 'react-router-dom'
-import { useMutation, useQuery,useQueryClient } from 'react-query'; // or '@tanstack/react-query' for newer versions
+import { useMutation, useQuery,useQueryClient } from  '@tanstack/react-query'; // or '@tanstack/react-query' for newer versions
 import { toast } from "sonner";
 // Hooks -> useMutation for POST and PUT request
 // useQuery for GET request
@@ -34,10 +34,11 @@ export const useGetMyRestaurant = () => {
         return response.json(); // backend returns restaurant details to the user
     };
 
-    const {data: restaurant, isLoading} = useQuery  // returns the body of response as data variable whose name is stated as restaurant
-    ("fetchMyRestaurant", // naming the query 
-        getMyRestaurantRequest);
-    return {restaurant, isLoading}
+    const {data: restaurant, isPending} = useQuery  // returns the body of response as data variable whose name is stated as restaurant
+    // naming the query 
+        (
+        {queryKey:['fetchMyRestaurant'], queryFn: getMyRestaurantRequest});
+    return {restaurant, isPending}
 }
 
 
@@ -73,16 +74,18 @@ const queryClient = useQueryClient();
     }
 
     const { mutateAsync: createRestaurant,
-            isLoading, isSuccess, isError
+            isPending, isSuccess, isError
         }
-        = useMutation(createMyRestaurantRequest
-            , {
+        = useMutation({
+            mutationFn:createMyRestaurantRequest
+            , 
                 onSuccess: () => {
                     // Invalidate or refetch the restaurnat query after a successful update
-                    queryClient.invalidateQueries("fetchMyRestaurant");
+                    queryClient.invalidateQueries({queryKey:['fetchMyRestaurant']});
                     toast.success("Restaurant created");
                 }
             }
+            
         )
     if(isSuccess){
         toast.success("Restaurant created!");
@@ -90,5 +93,5 @@ const queryClient = useQueryClient();
     if(isError){
         toast.error("Unable to create restaurant")
     }
-    return {createRestaurant, isLoading};
+    return {createRestaurant, isPending};
 }
