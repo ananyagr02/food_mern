@@ -1,6 +1,6 @@
 import { User } from "@/types";
 // import { QueryClient } from "@tanstack/react-query";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useMutation, useQuery, useQueryClient } from  '@tanstack/react-query'; //"react-query";
 import { toast } from "sonner";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -17,6 +17,7 @@ export const useGetMyUser = () => {
             method: "GET",
             headers
         })
+        console.log("RESPONSE USSS" ,response)
 
         if(!response.ok){
             throw new Error("Failed to get user")
@@ -24,13 +25,14 @@ export const useGetMyUser = () => {
         return response.json()
         }
 
-        const {data: currentUser, isLoading, error} = useQuery("fetchCurrentUser", getMyUserRequest);
+        const {data: currentUser, isPending, error} = useQuery( {queryKey:['fetchCurrentUser'], queryFn: getMyUserRequest});
+        console.log("CURRENT USER IS",currentUser)
 // useQuery has 2 parameters -> queryKey and queryFn
         if(error){
             toast.error(error.toString());
         }
 
-        return { currentUser, isLoading}
+        return { currentUser, isPending}
     }
 
 
@@ -60,6 +62,7 @@ type UpdateMyUserRequest = {
             headers,
             body: JSON.stringify(formData)
         })
+        console.log("RESPONSE IS ",response)
         if(!response.ok){
             throw new Error("Failed to update user")
         }
@@ -68,16 +71,16 @@ type UpdateMyUserRequest = {
     };
 
     const { mutateAsync: updateUser, 
-        isLoading,
+        isPending,
         isSuccess,
         error,
         reset
 
-    } = useMutation(updateMyUserRequest
-        , {
+    } = useMutation({
+            mutationFn:updateMyUserRequest,
         onSuccess: () => {
             // Invalidate or refetch the user query after a successful update
-            queryClient.invalidateQueries("fetchCurrentUser");
+            queryClient.invalidateQueries({queryKey:['fetchCurrentUser']});
             toast.success("User Profile Updated");
         }
     }
@@ -91,7 +94,8 @@ type UpdateMyUserRequest = {
         toast.error(error.toString());
         reset();
     }
+    console.log("UPDATED USER IS ", updateUser)
     return {
-        updateUser, isLoading
+        updateUser, isPending
     };
     }
