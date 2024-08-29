@@ -11,5 +11,7 @@ router.post('/signup',signupValidation , signup) ;
  // first validate all the body and then execute signup
 
 router.get("/",ensureAuthenticated, MyUserController.getCurrentUser)
-router.put("/",ensureAuthenticated,validateMyUserRequest,MyUserController.updateCurrentUser)
+router.put("/",ensureAuthenticated,
+    // validateMyUserRequest,
+    MyUserController.updateCurrentUser)
 export default router;
